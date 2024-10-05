@@ -1,67 +1,55 @@
-const Usuarios = require('../models/usuarios.js')
+const Usuarios = require('../models/usuarios');
+const jwt = require('jsonwebtoken');
+const bcrypt = require ('bcrypt');
 
-//agregar nuevo cliente
-exports.nuevoUsuario = async (req, res,next) =>{
-   
+exports.registrarUsuario = async (req, res) =>{
+
+    //leer los datos del Usuario
     const usuario = new Usuarios(req.body);
-
+    usuario.password = await bcrypt.hash(req.body.password, 12);
     try {
         await usuario.save();
-        res.json({mensaje: 'se agrego un usuario'});
-        
+        res.json({mensaje : 'Usuario creado correctamente'})
     } catch (error) {
         console.log(error);
-        next();
-        
-    }
-}
-exports.obtenerUsuarios = async (req, res, next) => {
-    try {
-        const usuarios = await Usuarios.find();
-        res.json(usuarios);
-    } catch (error) {
-        console.log(error);
-        next(error);
-    }
-};
-exports.obtenerUsuario = async (req, res, next)=>{
-    const usuario = await Usuarios.findById(req.params.idUsuario)
-
-    if(!usuario){
-        res.json({mensaje: 'el usuario no existe'})
-    }
-    //motrar usuario
-    res.json(usuario)
-}
-//actualiza un usuario
-exports.actualizarUsuario = async (req,res,next) => {
-    try {
-        const usuario = await Usuarios.findOneAndUpdate({_id : req.params.idUsuario},
-             req.body,{
-                new: true
-            }
-        );
-        res.json(usuario);
-
-    } catch (error) {
-        console.log(error);
-        next();
+        res.json({mensaje:'Hubo un error'})
     }
 
-    
 
 }
 
-exports.eliminarUsuario = async (req, res, next) => {
-    try {
-        await Usuarios.findByIdAndDelete({_id : req.params.idUsuario});
-        res.json({mensaje: 'el usuario ha sido eliminado'})
-        
-    } catch (error) {
-        console.log(error);
-        next(error);
+exports.autenticarUsuario = async(req,res,next)=>{
+    //buscar Usuario 
+    const {email, password} = req.body;
+    const Usuario = await Usuarios.findOne({ email });
+
+    if(!Usuario){
+        await res.status(401).json({mensaje: 'ese usuario no existe'});
     }
-};
+    else{
+        if(!bcrypt.compareSync(password, Usuario.password)) {
+            //si el password es incorrecto
+            await res.status(401).json({mensaje: 'Password incorrecto'});
+            next();
+        }
+        else {
+            //Firmar token
+            const token = jwt.sign({
+                email: Usuario.email,
+                nombre: Usuario.nombre,
+                id: Usuario._id
+            },
+            'LLAVESECRETA',
+            {
+                expiresIn :'1h'
+            });
+
+            res.json({token});
+        }
+
+    }
+
+}
 
 
 

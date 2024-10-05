@@ -4,9 +4,16 @@ const bodyParser = require('body-parser');
 const { MongoClient } = require("mongodb");
 const usuarios = require('./models/usuarios');
 const connectDB = require('./config/db');
+const cors = require('cors');
+
 
 
 const app = express();
+app.use(cors({
+  origin: 'http://localhost:3000', // Reemplaza con la URL de tu frontend
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true, // Habilita el uso de cookies en solicitudes CORS si es necesario
+}));
 
 // habilitar bodyparser
 app.use(bodyParser.json());

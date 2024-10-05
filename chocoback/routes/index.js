@@ -6,17 +6,10 @@ const pedidosController = require('../controllers/pedidosController')
 
 
 module.exports = function(){
+    //usuarios
+    router.post('/crear-cuenta', usuarioController.registrarUsuario );
+    router.post('/iniciar-sesion', usuarioController.autenticarUsuario);
 
-    //creando nuevos clientes con post
-    router.post('/usuarios', usuarioController.nuevoUsuario);
-    //obtener usuario
-    router.get('/usuarios', usuarioController.obtenerUsuarios);
-    //muestra un usuario por ID
-    router.get('/usuarios/:idUsuario', usuarioController.obtenerUsuario);
-    //actualizar usuario
-    router.put('/usuarios/:idUsuario', usuarioController.actualizarUsuario);
-    //eliminar usuarios
-    router.delete('/usuarios/:idUsuario', usuarioController.eliminarUsuario);
 
 
     //productos
