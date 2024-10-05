@@ -5,6 +5,10 @@ const productoController = require('../controllers/productoController')
 const pedidosController = require('../controllers/pedidosController')
 
 
+//middleware para proteger las rutas
+//const auth = require('../middleware/auth')
+
+
 module.exports = function(){
     //usuarios
     router.post('/crear-cuenta', usuarioController.registrarUsuario );

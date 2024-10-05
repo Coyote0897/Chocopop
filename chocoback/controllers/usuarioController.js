@@ -2,21 +2,35 @@ const Usuarios = require('../models/usuarios');
 const jwt = require('jsonwebtoken');
 const bcrypt = require ('bcrypt');
 
-exports.registrarUsuario = async (req, res) =>{
-
-    //leer los datos del Usuario
-    const usuario = new Usuarios(req.body);
-    usuario.password = await bcrypt.hash(req.body.password, 12);
+exports.registrarUsuario = async (req, res) => {
     try {
+        // Leer los datos del usuario desde el request
+        const { nombre, email, password, direccion, telefono } = req.body;
+
+        // Verificar si el usuario ya existe
+        let usuario = await Usuarios.findOne({ email });
+        if (usuario) {
+            return res.status(400).json({ mensaje: 'El usuario ya existe' });
+        }
+
+        // Crear nuevo usuario
+        usuario = new Usuarios({
+            nombre,
+            email,
+            password: await bcrypt.hash(password, 12),
+            direccion,
+            telefono
+        });
+
+        // Guardar el usuario en la base de datos
         await usuario.save();
-        res.json({mensaje : 'Usuario creado correctamente'})
+
+        res.json({ mensaje: 'Usuario creado correctamente' });
     } catch (error) {
         console.log(error);
-        res.json({mensaje:'Hubo un error'})
+        res.status(500).json({ mensaje: 'Hubo un error al registrar el usuario' });
     }
-
-
-}
+};
 
 exports.autenticarUsuario = async(req,res,next)=>{
     //buscar Usuario 
