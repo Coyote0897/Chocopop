@@ -13,6 +13,11 @@ module.exports = function(){
     //usuarios
     router.post('/crear-cuenta', usuarioController.registrarUsuario );
     router.post('/iniciar-sesion', usuarioController.autenticarUsuario);
+    //verificarcuenta
+    router.get('/verificar/:token', usuarioController.verificarCuenta);
+    //recuperar password
+    router.post('/recuperar-password', usuarioController.solicitarRecuperacionPassword);
+    router.post('/recuperar-password/:token', usuarioController.actualizarPassword);
 
 
 
