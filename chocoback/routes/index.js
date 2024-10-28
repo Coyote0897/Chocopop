@@ -24,9 +24,16 @@ module.exports = function(){
     //productos
     router.post('/productos',productoController.subirArchivo,productoController.nuevoProducto);
     router.get('/productos',productoController.obtenerProductos);
+    //obtencion por codigo de barras
+    router.get('/productos/codigo/:codigo', productoController.obtenerProductoPorCodigo);
+    // Ruta para actualizar el precio
+    router.put('/productos/precio/:idProducto', productoController.actualizarPrecioProducto); 
+
+
     router.get('/productos/:idProducto',productoController.obtenerProducto);
     router.put('/productos/:idProducto',productoController.subirArchivo,productoController.actualizarProducto);
     router.delete('/productos/:idProducto',productoController.eliminarProducto);
+   
 
     //pedidos
     router.post('/pedidos',pedidosController.nuevoPedido);

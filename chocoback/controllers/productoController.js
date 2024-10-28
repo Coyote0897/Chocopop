@@ -3,6 +3,9 @@ const Producto = require('../models/productos')
 const multer = require('multer');
 const shortid = require('shortid');
 
+const axios = require('axios');
+
+// Configuración de multer para subir archivos
 const configuracionMulter = {
     storage: fileStorage = multer.diskStorage({
         destination: (req, file, cb) => {
@@ -33,6 +36,7 @@ exports.subirArchivo = (req, res, next) =>{
         return next()
     })
 }
+
 
 //agregar Producto
 exports.nuevoProducto = async (req, res,next) =>{
@@ -113,4 +117,76 @@ try {
 }
 
 
+};
+
+
+
+// Obtener productos por código
+exports.obtenerProductoPorCodigo = async (req, res) => {
+    const { codigo } = req.params;
+    const { precio } = req.body;  
+    console.log("Código recibido en backend:", codigo); 
+
+    try {
+        const productoExistente = await Producto.findOne({ codigo_de_barras: codigo });
+
+        if (productoExistente) {
+            return res.status(200).json(productoExistente);
+        }
+
+        // Si no está en la base de datos, consultar la API externa
+        const response = await axios.get(
+            `https://world.openfoodfacts.org/api/v0/product/${codigo}.json`
+        );
+
+        if (response.data.status === 1) {
+            const producto = response.data.product;
+            const nombreCompleto = `${producto.product_name || 'Nombre desconocido'} - 
+                                    ${producto.brands || 'Marca desconocida'} - 
+                                    ${producto.quantity || 'Cantidad desconocida'}`;
+
+            // Crear un nuevo producto con el 'codigo_de_barras' como atributo
+            const nuevoProducto = new Producto({
+                nombre: nombreCompleto,
+                precio: precio || 0,  
+                descripcion: producto.generic_name || 'Descripción no disponible',
+                categoria: producto.categories || 'Sin categoría',
+                codigo_de_barras: codigo,
+                imagen: producto.image_url || 'https://via.placeholder.com/300',
+                ingredientes: producto.ingredients_text || 'Ingredientes no disponibles',
+                pais: producto.countries || 'No especificado'
+            });
+
+            await nuevoProducto.save();
+            return res.status(201).json(nuevoProducto);
+        } else {
+            return res.status(404).json({ mensaje: 'Producto no encontrado en la API' });
+        }
+    } catch (error) {
+        console.error('Error al conectar con la API:', error.message);
+        return res.status(500).json({ mensaje: 'Error interno del servidor' });
+    }
+};
+
+// Actualizar solo el precio del producto
+exports.actualizarPrecioProducto = async (req, res, next) => {
+    const { idProducto } = req.params;
+    const { precio } = req.body;
+
+    try {
+        const producto = await Producto.findByIdAndUpdate(
+            idProducto,
+            { precio },
+            { new: true }
+        );
+
+        if (!producto) {
+            return res.status(404).json({ mensaje: 'Producto no encontrado' });
+        }
+
+        res.json({ mensaje: 'Precio actualizado correctamente', producto });
+    } catch (error) {
+        console.error('Error al actualizar el precio:', error);
+        next(error);
+    }
 };

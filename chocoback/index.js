@@ -1,32 +1,50 @@
 const express = require('express');
 const routes = require('./routes');
 const bodyParser = require('body-parser');
-const { MongoClient } = require("mongodb");
-const usuarios = require('./models/usuarios');
 const connectDB = require('./config/db');
 const cors = require('cors');
-
+const path = require('path');
 
 
 const app = express();
-app.use(cors({
-  origin: 'http://localhost:3000', // Reemplaza con la URL de tu frontend
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true, // Habilita el uso de cookies en solicitudes CORS si es necesario
-}));
 
-// habilitar bodyparser
+// Permitir múltiples orígenes
+const whitelist = ['http://localhost:3000', 'http://localhost:3001']; // Agrega aquí ambos frontends
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1 || !origin) {
+      callback(null, true); // Permitir la solicitud si el origen está en la whitelist
+    } else {
+      callback(new Error('Not allowed by CORS')); // Rechazar el origen si no está permitido
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true, // Habilita el uso de cookies o credenciales
+};
+
+app.use(cors(corsOptions));
+
+
+// Servir archivos estáticos desde la carpeta 'uploads'
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+
+// Habilitar body-parser
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// conexión con Atlas
+// Conectar a la base de datos
 connectDB();
 
-// rutas de la app
+// Rutas de la aplicación
 app.use('/', routes());
 
-// puerto
-const PORT = process.env.PORT; 
+// Configuración del puerto
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`El proyecto está corriendo en el puerto ${PORT}`);
 });
