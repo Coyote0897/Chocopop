@@ -1,24 +1,30 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { Fragment } from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+
+// Layout
+import Sidebar from "./componentes/layout/sidebar";
+// Productos
+import Productos from "../src/componentes/productos/productos";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Fragment>
+        <div className="flex h-screen">
+         
+          <Sidebar />
+
+          
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-6">
+              <Routes>
+                <Route path="/productos" element={<Productos />} />
+              </Routes>
+            </div>
+          </div>
+        </div>
+      </Fragment>
+    </Router>
   );
 }
 
