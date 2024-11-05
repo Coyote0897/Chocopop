@@ -1,6 +1,7 @@
 // /components/Productos/ProductoRow.js
 import React from "react";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+//traducir
 
 
 const ProductoRow = ({ producto, eliminarProducto,abrirModalEditar  }) => (

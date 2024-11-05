@@ -26,5 +26,15 @@ export const actualizarProducto = async (id, formData) => {
   });
 };
 
+export const actualizarPrecioYCategoria = async (idProducto, datos) => {
+  const response = await clienteAxios.put(`/productos/${idProducto}/precio-categoria`, datos);
+  return response.data;
+};
+
+export const obtenerCategorias = async () => {
+  const response = await clienteAxios.get("/categorias"); 
+  return response.data;
+};
+
 
 
