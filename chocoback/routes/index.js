@@ -3,6 +3,8 @@ const router = express.Router();
 const usuarioController =  require('../controllers/usuarioController')
 const productoController = require('../controllers/productoController')
 const pedidosController = require('../controllers/pedidosController')
+const categoriaController = require('../controllers/categoriaController');
+
 
 
 //middleware para proteger las rutas
@@ -26,8 +28,17 @@ module.exports = function(){
     router.get('/productos',productoController.obtenerProductos);
     //obtencion por codigo de barras
     router.get('/productos/codigo/:codigo', productoController.obtenerProductoPorCodigo);
-    // Ruta para actualizar el precio
-    router.put('/productos/precio/:idProducto', productoController.actualizarPrecioProducto); 
+    //agregar el precio y la categoria
+    router.put('/productos/:idProducto/precio-categoria', productoController.actualizarPrecioYCategoria);
+
+    
+
+     // Categorías
+     router.post('/categorias', categoriaController.nuevaCategoria);
+     router.get('/categorias', categoriaController.obtenerCategorias);
+     router.get('/categorias/:idCategoria', categoriaController.obtenerCategoria);
+     router.put('/categorias/:idCategoria', categoriaController.actualizarCategoria);
+     router.delete('/categorias/:idCategoria', categoriaController.eliminarCategoria);
 
 
     router.get('/productos/:idProducto',productoController.obtenerProducto);

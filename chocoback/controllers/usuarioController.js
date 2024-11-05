@@ -6,9 +6,25 @@ const { enviarEmailVerificacion } = require('../helpers/emails');
 const { enviarEmailRecuperacion } = require('../helpers/emails');
 const { generarToken, verificarToken } = require('../helpers/token'); 
 
+const validarDireccion = (direccion) => {
+    return typeof direccion === 'string' && direccion.trim() !== '';
+};
+
+const validarTelefono = (telefono) => {
+    return /^\d{7,10}$/.test(telefono);
+};
+
 exports.registrarUsuario = async (req, res) => {
     try {
         const { nombre, email, password, direccion, telefono } = req.body;
+
+        if (!validarDireccion(direccion)) {
+            return res.status(400).json({ mensaje: 'La dirección no es válida' });
+        }
+        
+        if (!validarTelefono(telefono)) {
+            return res.status(400).json({ mensaje: 'El número de teléfono no es válido' });
+        }
 
         // Verificar si el usuario ya existe
         let usuario = await Usuarios.findOne({ email });
@@ -26,8 +42,8 @@ exports.registrarUsuario = async (req, res) => {
             password: await bcrypt.hash(password, 12),
             direccion,
             telefono,
-            token: verificationToken, // Guardar el token en la base de datos
-            confirmado: false // Iniciar con la cuenta sin confirmar
+            token: verificationToken, 
+            confirmado: false 
         });
 
         // Guardar el usuario en la base de datos
@@ -63,7 +79,7 @@ exports.verificarCuenta = async (req, res) => {
 
         // Actualizar el estado de verificación
         usuario.confirmado = true;
-        usuario.token = ''; // Limpiar el token
+        usuario.token = '';
         await usuario.save();
 
         res.json({ mensaje: 'Cuenta verificada correctamente. Ahora puedes iniciar sesión.' });
@@ -104,7 +120,6 @@ exports.autenticarUsuario = async (req, res, next) => {
 
 
 //recuperar contraseña 
-
 exports.solicitarRecuperacionPassword = async (req, res) => {
     const { email } = req.body;
 

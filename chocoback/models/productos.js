@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const ProductosSchema = new Schema({
-    
     nombre: {
         type: String,
         trim: true,
@@ -18,19 +17,20 @@ const ProductosSchema = new Schema({
         trim: true,
         maxlength: 500
     },
-    categoria: {
+    categoria: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Categoria'
+    }],
+    codigo_de_barras: {
         type: String,
+        unique: true,
         required: true
     },
-    codigo_de_barras: {
-        type: String, 
-        unique: true, 
-        required: true },
     imagen: {
-        type: String  
+        type: String
     },
     ingredientes: {
-        type: String, // Guardaremos los ingredientes como texto largo
+        type: String,
         trim: true,
         default: 'Ingredientes no disponibles'
     },

@@ -1,9 +1,14 @@
 const Producto = require('../models/productos')
+const Categoria = require('../models/categoria')
+
 
 const multer = require('multer');
 const shortid = require('shortid');
-
 const axios = require('axios');
+
+//traduccion
+const { traducirTexto } = require('../helpers/translateHelper');
+
 
 // Configuración de multer para subir archivos
 const configuracionMulter = {
@@ -39,21 +44,35 @@ exports.subirArchivo = (req, res, next) =>{
 
 
 //agregar Producto
-exports.nuevoProducto = async (req, res,next) =>{
 
-    const producto = new Producto(req.body);
+exports.nuevoProducto = async (req, res, next) => {
     try {
-        if(req.file.filename){
-            producto.imagen = req.file.filename
-        }
-        await producto.save();
-        res.json({mensaje: 'se agrego un producto'})
-    } catch (error) {
-        console.log(error);
-        next();
-    }
+        const producto = new Producto(req.body);
 
+        if (req.file && req.file.filename) {
+            producto.imagen = req.file.filename;
+        }
+
+        if (req.body.categoria) {
+            const categoriaId = req.body.categoria; 
+            const categoriaExistente = await Categoria.findById(categoriaId);
+
+            if (!categoriaExistente) {
+                return res.status(400).json({ mensaje: 'La categoría seleccionada no existe' });
+            }
+
+            producto.categoria = categoriaId;
+        }
+
+       
+        await producto.save();
+        res.status(201).json({ mensaje: 'Se agregó un producto exitosamente', producto });
+    } catch (error) {
+        console.error('Error al agregar el producto:', error);
+        next(error);
+    }
 };
+
 //obtener Productos
 exports.obtenerProductos = async (req,res,next) =>{
     try {
@@ -76,33 +95,43 @@ exports.obtenerProducto = async (req,res,next) =>{
 }
 
 //actualizar producto
-exports.actualizarProducto = async(req,res,next)=>{
-
+exports.actualizarProducto = async (req, res, next) => {
     try {
-
-        //contruir un nuevo producto
         let nuevoProducto = req.body;
 
-        //verificar si hay imagen nueva
-        if(req.file){
+        // Si se subió una nueva imagen, la asignamos al producto
+        if (req.file) {
             nuevoProducto.imagen = req.file.filename;
         } else {
+            // Si no se subió una nueva imagen, mantenemos la imagen existente
             let productoAnterior = await Producto.findById(req.params.idProducto);
             nuevoProducto.imagen = productoAnterior.imagen;
         }
 
+        // Buscar la categoría por nombre y obtener su ID
+        if (nuevoProducto.categoria) {
+            const categoriaEncontrada = await Categoria.findOne({ nombre: nuevoProducto.categoria.trim() });
+            if (!categoriaEncontrada) {
+                return res.status(400).json({ mensaje: 'La categoría especificada no existe' });
+            }
+            nuevoProducto.categoria = categoriaEncontrada._id; // Asignar el ID de la categoría encontrada
+        }
 
-        let producto = await Producto.findByIdAndUpdate({_id : req.params.idProducto},
-            req.body,{
-                new: true
-            });
-        res.json(producto);
+        // Actualizar el producto con los datos modificados
+        const productoActualizado = await Producto.findByIdAndUpdate(
+            req.params.idProducto,
+            nuevoProducto,
+            { new: true }
+        );
+
+        res.json(productoActualizado);
 
     } catch (error) {
-        console.log(error)
-        next(error)
+        console.log('Error al actualizar el producto:', error);
+        next(error);
     }
-}
+};
+
 
 //Eliminar producto\
 
@@ -124,37 +153,66 @@ try {
 // Obtener productos por código
 exports.obtenerProductoPorCodigo = async (req, res) => {
     const { codigo } = req.params;
-    const { precio } = req.body;  
-    console.log("Código recibido en backend:", codigo); 
+    const { precio, categorias } = req.body; // Asegúrate de que `categorias` sea un array de nombres de categorías
+    console.log("Código recibido en backend:", codigo);
 
     try {
-        const productoExistente = await Producto.findOne({ codigo_de_barras: codigo });
+        const productoExistente = await Producto.findOne({ codigo_de_barras: codigo }).populate('categoria');
 
         if (productoExistente) {
             return res.status(200).json(productoExistente);
         }
 
-        // Si no está en la base de datos, consultar la API externa
         const response = await axios.get(
             `https://world.openfoodfacts.org/api/v0/product/${codigo}.json`
         );
 
         if (response.data.status === 1) {
             const producto = response.data.product;
-            const nombreCompleto = `${producto.product_name || 'Nombre desconocido'} - 
-                                    ${producto.brands || 'Marca desconocida'} - 
-                                    ${producto.quantity || 'Cantidad desconocida'}`;
 
-            // Crear un nuevo producto con el 'codigo_de_barras' como atributo
+            const obtenerPrimerPais = (cadena) => {
+                if (!cadena) return "No especificado";
+                const paises = cadena.split(",");
+                return paises.length > 1 ? `${paises[0]} ` : paises[0];
+            };
+
+            const pais = obtenerPrimerPais(
+                producto.manufacturing_places ||
+                producto.countries_imported ||
+                producto.countries ||
+                producto.countries_hierarchy
+            );
+
+            const nombreCompleto = `${producto.product_name} - 
+                                    ${producto.brands } - 
+                                    ${producto.quantity}`;
+
+            // Usar la función de traducción del helper
+            const descripcionTraducida = await traducirTexto(producto.generic_name || 'Descripción no disponible');
+            const ingredientesTraducidos = await traducirTexto(producto.ingredients_text || 'Ingredientes no disponibles');
+
+            // Buscar o crear categorías y obtener sus IDs
+            const categoriasIDs = [];
+            if (categorias && categorias.length > 0) {
+                for (const nombreCategoria of categorias) {
+                    let categoria = await Categoria.findOne({ nombre: nombreCategoria.trim() });
+                    if (!categoria) {
+                        categoria = new Categoria({ nombre: nombreCategoria.trim(), descripcion: '' });
+                        await categoria.save();
+                    }
+                    categoriasIDs.push(categoria._id);
+                }
+            }
+
             const nuevoProducto = new Producto({
                 nombre: nombreCompleto,
-                precio: precio || 0,  
-                descripcion: producto.generic_name || 'Descripción no disponible',
-                categoria: producto.categories || 'Sin categoría',
+                precio: precio || 0,
+                descripcion: descripcionTraducida,
+                categoria: categoriasIDs,
                 codigo_de_barras: codigo,
                 imagen: producto.image_url || 'https://via.placeholder.com/300',
-                ingredientes: producto.ingredients_text || 'Ingredientes no disponibles',
-                pais: producto.countries || 'No especificado'
+                ingredientes: ingredientesTraducidos,
+                pais: pais
             });
 
             await nuevoProducto.save();
@@ -168,25 +226,38 @@ exports.obtenerProductoPorCodigo = async (req, res) => {
     }
 };
 
-// Actualizar solo el precio del producto
-exports.actualizarPrecioProducto = async (req, res, next) => {
+
+//agregar precio y categoria 
+exports.actualizarPrecioYCategoria = async (req, res, next) => {
     const { idProducto } = req.params;
-    const { precio } = req.body;
+    const { precio, categorias } = req.body;
 
     try {
-        const producto = await Producto.findByIdAndUpdate(
-            idProducto,
-            { precio },
-            { new: true }
-        );
-
+        let producto = await Producto.findById(idProducto);
         if (!producto) {
-            return res.status(404).json({ mensaje: 'Producto no encontrado' });
+            return res.status(404).json({ mensaje: 'El producto no existe' });
         }
 
-        res.json({ mensaje: 'Precio actualizado correctamente', producto });
+        producto.precio = precio || producto.precio;
+
+        // Asegúrate de que las categorías ya existan en la base de datos antes de asignarlas
+        if (categorias && categorias.length > 0) {
+            const categoriasExistentes = await Categoria.find({ _id: { $in: categorias } });
+            if (categoriasExistentes.length !== categorias.length) {
+                return res.status(400).json({ mensaje: 'Una o más categorías no existen' });
+            }
+            producto.categoria = categorias.map(cat => categoriasExistentes.find(c => c._id.equals(cat))._id);
+        }
+
+        await producto.save();
+
+        res.status(200).json({ mensaje: 'Precio y categorías actualizados', producto });
     } catch (error) {
-        console.error('Error al actualizar el precio:', error);
+        console.error('Error al actualizar precio y categoría:', error);
         next(error);
     }
 };
+
+
+
+

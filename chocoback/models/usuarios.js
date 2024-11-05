@@ -2,7 +2,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-// Definir el esquema de usuario con los nuevos campos
+
 const usuariosSchema = new Schema({
   email: {
     type: String,
@@ -42,5 +42,4 @@ const usuariosSchema = new Schema({
   timestamps: true 
 });
 
-// Exportar el modelo de Usuario
 module.exports = mongoose.model('Usuarios', usuariosSchema);

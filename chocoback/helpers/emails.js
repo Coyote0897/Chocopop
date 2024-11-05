@@ -5,11 +5,11 @@ const enviarEmailVerificacion = async (email, nombre, token) => {
     try {
         // Configuración del transporte con Mailtrap
         const transport = nodemailer.createTransport({
-            host: "sandbox.smtp.mailtrap.io", // Host de Mailtrap
-            port: 2525, // Puerto de Mailtrap
+            host: "sandbox.smtp.mailtrap.io", 
+            port: 2525,
             auth: {
-                user: "f6e8e76be118b8", // Tu usuario de Mailtrap
-                pass: "20c0e12f9c706c"  // Tu contraseña de Mailtrap
+                user: "f6e8e76be118b8", 
+                pass: "20c0e12f9c706c"  
             }
         });
 
@@ -42,12 +42,12 @@ const enviarEmailRecuperacion = async (email, nombre, token) => {
             host: "sandbox.smtp.mailtrap.io",
             port: 2525,
             auth: {
-                user: "f6e8e76be118b8", // Tu usuario de Mailtrap
-                pass: "20c0e12f9c706c"  // Tu contraseña de Mailtrap
+                user: "f6e8e76be118b8", 
+                pass: "20c0e12f9c706c"  
             }
         });
 
-        // Definir el contenido del correo
+        
         const mailOptions = {
             from: '"Choco Pop" <no-reply@chocopop.com>',
             to: email,
