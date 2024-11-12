@@ -9,7 +9,6 @@ const axios = require('axios');
 //traduccion
 const { traducirTexto } = require('../helpers/translateHelper');
 
-
 // Configuración de multer para subir archivos
 const configuracionMulter = {
     storage: fileStorage = multer.diskStorage({
@@ -44,7 +43,6 @@ exports.subirArchivo = (req, res, next) =>{
 
 
 //agregar Producto
-
 exports.nuevoProducto = async (req, res, next) => {
     try {
         const producto = new Producto(req.body);
@@ -97,43 +95,40 @@ exports.obtenerProducto = async (req,res,next) =>{
 //actualizar producto
 exports.actualizarProducto = async (req, res, next) => {
     try {
-        let nuevoProducto = req.body;
-
-        // Si se subió una nueva imagen, la asignamos al producto
-        if (req.file) {
-            nuevoProducto.imagen = req.file.filename;
-        } else {
-            // Si no se subió una nueva imagen, mantenemos la imagen existente
-            let productoAnterior = await Producto.findById(req.params.idProducto);
-            nuevoProducto.imagen = productoAnterior.imagen;
+      let nuevoProducto = req.body;
+  
+      if (req.file) {
+        nuevoProducto.imagen = req.file.filename;
+      } else {
+        let productoAnterior = await Producto.findById(req.params.idProducto);
+        nuevoProducto.imagen = productoAnterior.imagen;
+      }
+  
+      if (nuevoProducto.categoria) {
+        const categoriaEncontrada = await Categoria.findOne({ _id: nuevoProducto.categoria });
+        if (!categoriaEncontrada) {
+          return res.status(400).json({ mensaje: 'La categoría especificada no existe' });
         }
-
-        // Buscar la categoría por nombre y obtener su ID
-        if (nuevoProducto.categoria) {
-            const categoriaEncontrada = await Categoria.findOne({ nombre: nuevoProducto.categoria.trim() });
-            if (!categoriaEncontrada) {
-                return res.status(400).json({ mensaje: 'La categoría especificada no existe' });
-            }
-            nuevoProducto.categoria = categoriaEncontrada._id; // Asignar el ID de la categoría encontrada
-        }
-
-        // Actualizar el producto con los datos modificados
-        const productoActualizado = await Producto.findByIdAndUpdate(
-            req.params.idProducto,
-            nuevoProducto,
-            { new: true }
-        );
-
-        res.json(productoActualizado);
-
+      }
+  
+      const productoActualizado = await Producto.findByIdAndUpdate(
+        req.params.idProducto,
+        nuevoProducto,
+        { new: true }
+      );
+  
+      res.json(productoActualizado);
+  
     } catch (error) {
-        console.log('Error al actualizar el producto:', error);
-        next(error);
+      console.error('Error al actualizar el producto:', error);
+      res.status(500).json({ mensaje: 'Error al actualizar el producto', error: error.message });
     }
-};
+  };
+  
+  
 
 
-//Eliminar producto\
+//Eliminar producto
 
 exports.eliminarProducto = async (req,res,next)=>{
 try {
@@ -153,7 +148,7 @@ try {
 // Obtener productos por código
 exports.obtenerProductoPorCodigo = async (req, res) => {
     const { codigo } = req.params;
-    const { precio, categorias } = req.body; // Asegúrate de que `categorias` sea un array de nombres de categorías
+    const { precio, categorias } = req.body; 
     console.log("Código recibido en backend:", codigo);
 
     try {
@@ -258,6 +253,30 @@ exports.actualizarPrecioYCategoria = async (req, res, next) => {
     }
 };
 
+// Obtener todas las categorías
+
+exports.obtenerProductosPorNombreCategoria = async (req, res, next) => {
+    const { nombreCategoria } = req.params;
+  
+    try {
+      // Buscar la categoría por nombre
+      const categoria = await Categoria.findOne({ nombre: nombreCategoria });
+      if (!categoria) {
+        return res.status(404).json({ mensaje: 'La categoría no existe' });
+      }
+  
+      // Usar el _id de la categoría encontrada para buscar los productos
+      const productos = await Producto.find({ categoria: categoria._id }).populate('categoria');
+      if (productos.length === 0) {
+        return res.status(404).json({ mensaje: 'No se encontraron productos para esta categoría' });
+      }
+  
+      res.status(200).json(productos);
+    } catch (error) {
+      console.error('Error al obtener productos por nombre de categoría:', error);
+      next(error);
+    }
+  };
 
 
 

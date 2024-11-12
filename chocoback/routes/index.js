@@ -4,6 +4,7 @@ const usuarioController =  require('../controllers/usuarioController')
 const productoController = require('../controllers/productoController')
 const pedidosController = require('../controllers/pedidosController')
 const categoriaController = require('../controllers/categoriaController');
+const ventasController = require('../controllers/ventasController');
 
 
 
@@ -21,15 +22,23 @@ module.exports = function(){
     router.post('/recuperar-password', usuarioController.solicitarRecuperacionPassword);
     router.post('/recuperar-password/:token', usuarioController.actualizarPassword);
 
+    router.get('/usuarios', usuarioController.verUsuarios);
+
+
 
 
     //productos
     router.post('/productos',productoController.subirArchivo,productoController.nuevoProducto);
     router.get('/productos',productoController.obtenerProductos);
+    router.put('/productos/:idProducto',productoController.subirArchivo,productoController.actualizarProducto);
     //obtencion por codigo de barras
     router.get('/productos/codigo/:codigo', productoController.obtenerProductoPorCodigo);
     //agregar el precio y la categoria
     router.put('/productos/:idProducto/precio-categoria', productoController.actualizarPrecioYCategoria);
+    
+
+    // Ruta para obtener productos por nombre de categoría
+    router.get('/productos/categoria/nombre/:nombreCategoria', productoController.obtenerProductosPorNombreCategoria);
 
     
 
@@ -39,10 +48,9 @@ module.exports = function(){
      router.get('/categorias/:idCategoria', categoriaController.obtenerCategoria);
      router.put('/categorias/:idCategoria', categoriaController.actualizarCategoria);
      router.delete('/categorias/:idCategoria', categoriaController.eliminarCategoria);
-
+     
 
     router.get('/productos/:idProducto',productoController.obtenerProducto);
-    router.put('/productos/:idProducto',productoController.subirArchivo,productoController.actualizarProducto);
     router.delete('/productos/:idProducto',productoController.eliminarProducto);
    
 
@@ -53,20 +61,12 @@ module.exports = function(){
     router.put('/pedidos/:idPedido',pedidosController.actualizarPedido);
     router.delete('/pedidos/:idPedido',pedidosController.eliminarPedido);
 
+    //ventas
+    router.post('/ventas', ventasController.registrarVenta);
+    router.get('/ventas', ventasController.obtenerVentas);    
+    router.get('/ventas/:idVenta',ventasController.obtenerVenta); 
 
 
-
-
-    
-
-
-
-
-
-
-    
-
-    
     return router
 }
 

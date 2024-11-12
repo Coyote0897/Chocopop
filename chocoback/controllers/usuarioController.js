@@ -171,3 +171,17 @@ exports.actualizarPassword = async (req, res) => {
         return res.status(500).json({ mensaje: 'Hubo un error al actualizar la contraseña' });
     }
 };
+
+// Ver información de los usuarios
+exports.verUsuarios = async (req, res) => {
+    try {
+        // Buscar todos los usuarios y seleccionar solo los campos necesarios
+        const usuarios = await Usuarios.find({}, 'nombre email direccion telefono confirmado');
+        
+        // Enviar la lista de usuarios en la respuesta
+        res.json(usuarios);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ mensaje: 'Hubo un error al obtener la información de los usuarios' });
+    }
+};
