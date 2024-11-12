@@ -4,8 +4,17 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 // Layout
 import Sidebar from "./componentes/layout/sidebar";
 // Productos
-import Productos from "../src/componentes/productos/productos";
+import Productos from "./componentes/productos/productos";
+//categorias
 import Categorias from "./componentes/categorias/categorias";
+//ventas
+import Ventas from './componentes/Ventas/ventas';
+
+import Clientes from './componentes/clientes/clientes'; 
+
+
+
+
 
 function App() {
   return (
@@ -21,6 +30,8 @@ function App() {
               <Routes>
                 <Route path="/productos" element={<Productos />} />
                 <Route path="/categorias" element={<Categorias />} />
+                <Route path="/ventas" element={<Ventas/>} />
+                <Route path="/clientes" element={<Clientes />} />
               </Routes>
             </div>
           </div>

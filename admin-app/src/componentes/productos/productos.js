@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import Modal from "react-modal";
 import ProductoRow from "./ProductoRow";
-//traduccion
+//servicios 
 import { obtenerProductos, eliminarProducto, agregarProducto, obtenerProductoPorCodigo, actualizarProducto,actualizarPrecioYCategoria,obtenerCategorias } from "./productosService";
 
 Modal.setAppElement("#root");
@@ -13,13 +13,11 @@ const Productos = () => {
   const [categorias, setCategorias] = useState([]);
   const [modalEditarOpen, setModalEditarOpen] = useState(false);
   const [productoAEditar, setProductoAEditar] = useState(null);
-  const [producto, setProducto] = useState({
-    nombre: "",
-    categoria: "",
-    precio: "",
-    codigoManual: `${Date.now()}`,
-    imagen: null,
-  });
+  const [busqueda, setBusqueda] = useState(""); 
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("");
+
+
+  
 
   //paginador
   const [paginaActual, setPaginaActual] = useState(1);
@@ -27,14 +25,37 @@ const Productos = () => {
 
   const indexOfLastProducto = paginaActual * productosPorPagina;
   const indexOfFirstProducto = indexOfLastProducto - productosPorPagina;
-  const productosPaginados = productos.slice(indexOfFirstProducto, indexOfLastProducto);
 
   const cambiarPagina = (numero) => setPaginaActual(numero);
+
+  // Filtrar productos por búsqueda antes de la paginación
+  const productosFiltrados = productos.filter((producto) => {
+    const categoriaNombre = categorias.find(cat => cat._id === producto.categoria)?.nombre || "";
+
+    // Verificar si el producto coincide con la búsqueda por texto (nombre, código de barras, o nombre de la categoría)
+    const coincideBusqueda = 
+      producto.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+      (producto.codigo_de_barras || "").toLowerCase().includes(busqueda.toLowerCase()) ||
+      categoriaNombre.toLowerCase().includes(busqueda.toLowerCase());
+  
+    // Verificar si coincide con la categoría seleccionada o si no hay ninguna categoría seleccionada (mostrar todos)
+    const coincideCategoria = 
+      categoriaSeleccionada === "" || producto.categoria === categoriaSeleccionada;
+  
+    return coincideBusqueda && coincideCategoria;
+    
+  });
+  
+  
+  
+
+const productosPaginados = productosFiltrados.slice(indexOfFirstProducto, indexOfLastProducto);
+
 
   // Renderizar botones de paginación
   const renderPaginador = () => {
     const paginas = [];
-    for (let i = 1; i <= Math.ceil(productos.length / productosPorPagina); i++) {
+    for (let i = 1; i <= Math.ceil(productosFiltrados.length / productosPorPagina); i++) {
       paginas.push(i);
     }
     return paginas.map((numero) => (
@@ -47,6 +68,7 @@ const Productos = () => {
       </button>
     ));
   };
+  
 
   // Cargar productos y categorías al montar el componente
   useEffect(() => {
@@ -119,10 +141,7 @@ const Productos = () => {
 
                 setProductos((prev) => [...prev, producto]);
                 Swal.fire("Producto agregado", "", "success").then(async () => {
-                    // Obtener todas las categorías de la base de datos antes de mostrar el segundo Swal
                     const categoriasDisponibles = await obtenerCategorias();
-
-                    // Filtrar las categorías para asegurarse de que solo muestra las existentes
                     const categoriasFiltradas = categoriasDisponibles.filter(cat => cat.nombre && cat._id);
 
                     if (!categoriasFiltradas || categoriasFiltradas.length === 0) {
@@ -130,7 +149,6 @@ const Productos = () => {
                         return;
                     }
 
-                    // Crear opciones de select dinámicamente con las categorías existentes
                     const opcionesCategorias = categoriasFiltradas.map(cat => 
                         `<option value="${cat._id}">${cat.nombre}</option>`
                     ).join('');
@@ -147,6 +165,11 @@ const Productos = () => {
                         preConfirm: () => {
                             const precio = document.getElementById('precio').value;
                             const categoria = document.getElementById('categoria').value;
+
+                            if (precio < 0) {
+                                Swal.showValidationMessage('El precio no puede ser negativo');
+                                return;
+                            }
 
                             if (!precio && !categoria) {
                                 Swal.showValidationMessage('Debe ingresar al menos un valor para actualizar');
@@ -186,6 +209,7 @@ const Productos = () => {
         }
     });
 };
+
   
   //agregar manualmente
   const handleAgregarManual = async () => {
@@ -206,7 +230,11 @@ const Productos = () => {
         <input id="ingredientes" class="swal2-input" placeholder="Ingredientes">
         <input id="pais" class="swal2-input" placeholder="País de Origen">
         <input id="codigoManual" class="swal2-input" placeholder="Código Manual" value="BAR${Date.now()}">
-        <input id="imagen" type="file" class="swal2-input" placeholder="Imagen">
+      <div class="w-full p-3 mb-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center">
+        <label for="imagen" class="cursor-pointer px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Seleccionar archivo</label>
+        <input id="imagen" type="file" class="hidden">
+        <span id="file-name" class="ml-4 text-gray-500">Ningún archivo seleccionado</span>
+      </div>
       `,
       showCancelButton: true,
       confirmButtonText: "Agregar",
@@ -253,45 +281,67 @@ const Productos = () => {
   
   //editar producto 
   const abrirModalEditar = (producto) => {
-    setProductoAEditar(producto);
+    // Almacena el ID de la categoría en `productoAEditar.categoria`
+    setProductoAEditar({ ...producto, categoria: producto.categoria });
     setModalEditarOpen(true);
-  };
+};
 
-  const handleChangeEditar = (e) => {
-    const { name, value, files } = e.target;
-    setProductoAEditar((prev) => ({
-      ...prev,
-      [name]: files ? files[0] : value,
-    }));
-  };
 
-  const handleEditarProducto = async () => {
-    const formData = new FormData();
-    formData.append("nombre", productoAEditar.nombre);
-    formData.append("categoria", productoAEditar.categoria); // Enviar el nombre de la categoría
-    formData.append("precio", productoAEditar.precio);
-    formData.append("descripcion", productoAEditar.descripcion);
-    formData.append("ingredientes", productoAEditar.ingredientes);
-    formData.append("pais", productoAEditar.pais);
 
-    // Solo agregar la imagen si se ha cambiado
-    if (productoAEditar.imagen instanceof File) {
-      formData.append("imagen", productoAEditar.imagen);
-    }
+const handleChangeEditar = (e) => {
+  const { name, value, files } = e.target;
 
-    try {
-      await actualizarProducto(productoAEditar._id, formData);
-      Swal.fire("Producto actualizado", "", "success");
-      setModalEditarOpen(false);
-      const productosActualizados = await obtenerProductos();
-      setProductos(productosActualizados); // Actualizar la lista de productos
-    } catch (error) {
-      console.error("Error al actualizar el producto:", error);
-      Swal.fire("Error", "No se pudo actualizar el producto", "error");
-    }
-  };
-  
-  
+  setProductoAEditar((prev) => ({
+    ...prev,
+    [name]: name === "categoria" ? categorias.find(c => c._id === value)?._id : (files ? files[0] : value),
+  }));
+};
+
+
+
+const handleEditarProducto = async () => {
+  const formData = new FormData();
+  formData.append("nombre", productoAEditar.nombre);
+  formData.append("categoria", productoAEditar.categoria);
+  formData.append("precio", productoAEditar.precio);
+  formData.append("descripcion", productoAEditar.descripcion);
+  formData.append("ingredientes", productoAEditar.ingredientes);
+  formData.append("pais", productoAEditar.pais);
+
+  if (productoAEditar.imagen instanceof File) {
+    formData.append("imagen", productoAEditar.imagen);
+  }
+
+  // Verifica el contenido de FormData antes de la solicitud
+  for (let [key, value] of formData.entries()) {
+    console.log(`${key}:`, value);
+  }
+
+  try {
+    await actualizarProducto(productoAEditar._id, formData);
+    Swal.fire("Producto actualizado", "", "success");
+    setModalEditarOpen(false);
+    const productosActualizados = await obtenerProductos();
+    setProductos(productosActualizados);
+  } catch (error) {
+    console.error("Error al actualizar el producto:", error);
+    Swal.fire("Error", "No se pudo actualizar el producto", "error");
+  }
+};
+
+//busqueda de productos
+const handleBusquedaChange = (e) => {
+  setBusqueda(e.target.value);
+  setPaginaActual(1);
+};
+
+//filtrado por categoria 
+const handleCategoriaChange = (e) => {
+  setCategoriaSeleccionada(e.target.value);
+  setPaginaActual(1); // Reiniciar a la primera página al cambiar la categoría
+};
+
+
 
   return (
     <div className="p-4">
@@ -307,6 +357,40 @@ const Productos = () => {
         </div>
       </div>
 
+      <div className="mb-4 flex space-x-4">
+  <div className="relative w-full">
+    <input
+      type="text"
+      placeholder="Buscar por código de barras, nombre"
+      value={busqueda}
+      onChange={handleBusquedaChange}
+      className="w-full p-3 pl-10 border border-gray-300 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+    <svg
+      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+      xmlns="http://www.w3.org/2000/svg"
+      width="20"
+      height="20"
+      fill="currentColor"
+      viewBox="0 0 16 16"
+    >
+      <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001a1.007 1.007 0 0 0-.194.195l3.85 3.85a1 1 0 0 0 1.415-1.415l-3.85-3.85a1.007 1.007 0 0 0-.193-.194zm-5.442 1.528a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
+    </svg>
+  </div>
+  
+  <select
+  value={categoriaSeleccionada}
+  onChange={handleCategoriaChange}
+  className="w-full p-3 border border-gray-300 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+>
+  <option value="">Todas las categorías</option>
+  {categorias.map((categoria) => (
+    <option key={categoria._id} value={categoria._id}>
+      {categoria.nombre}
+    </option>
+  ))}
+</select>
+</div>
 
       <table className="w-full border-collapse border">
         <thead>
@@ -355,19 +439,21 @@ const Productos = () => {
         />
 
         <label className="block mb-2 text-green-600">Categoría</label>
-            <select
-                name="categoria"
-                value={productoAEditar?.categoria || ""}
-                onChange={handleChangeEditar}
-                className="w-full mb-4 p-2 border rounded"
-            >
-                <option value="">Selecciona una categoría</option>
-                {categorias.map((categoria) => (
-                    <option key={categoria._id} value={categoria.nombre}>
-                        {categoria.nombre}
-                    </option>
-                ))}
-            </select>
+        <select
+    name="categoria"
+    value={productoAEditar?.categoria || ""}
+    onChange={handleChangeEditar}
+    className="w-full mb-4 p-2 border rounded"
+>
+    <option value="">Selecciona una categoría</option>
+    {categorias.map((categoria) => (
+        <option key={categoria._id} value={categoria._id}>
+            {categoria.nombre}
+        </option>
+    ))}
+</select>
+
+
 
         <label className="block mb-2 text-red-600">Precio</label> 
         <input

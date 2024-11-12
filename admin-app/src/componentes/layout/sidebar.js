@@ -29,7 +29,7 @@ const Sidebar = () => {
   return (
     <div className="flex flex-col h-screen w-64 bg-gray-900 text-white">
       <div className="flex items-center justify-center h-16 border-b border-gray-700">
-        <img src="" alt="Logo" className="h-10" />
+        <img src="/img/tablero.png" alt="Logo" className="h-10" />
       </div>
 
       <nav className="flex-1 px-4 py-4">

@@ -23,17 +23,30 @@ const Categorias = () => {
       title: 'Agregar Nueva Categoría',
       html:
         `<input id="swal-input1" class="swal2-input" placeholder="Nombre de la categoría">` +
-        `<input id="swal-input2" class="swal2-input" placeholder="Descripción">`,
+        `<input id="swal-input2" class="swal2-input" placeholder="Descripción (máx. 100 caracteres)">`,
       focusConfirm: false,
       showCancelButton: true,
       confirmButtonText: 'Guardar',
       preConfirm: () => {
-        const nombre = document.getElementById('swal-input1').value;
-        const descripcion = document.getElementById('swal-input2').value;
+        const nombre = document.getElementById('swal-input1').value.trim();
+        const descripcion = document.getElementById('swal-input2').value.trim();
+
+        // Validación de campos vacíos y longitud de la descripción
         if (!nombre) {
           Swal.showValidationMessage('El nombre es obligatorio');
           return;
         }
+        if (descripcion.length > 100) {
+          Swal.showValidationMessage('La descripción no puede exceder los 100 caracteres');
+          return;
+        }
+        
+        // Verificar si el nombre de la categoría ya existe
+        if (categorias.some(categoria => categoria.nombre.toLowerCase() === nombre.toLowerCase())) {
+          Swal.showValidationMessage('Ya existe una categoría con este nombre');
+          return;
+        }
+
         return { nombre, descripcion };
       }
     });
@@ -78,17 +91,30 @@ const Categorias = () => {
       title: 'Editar Categoría',
       html:
         `<input id="swal-input1" class="swal2-input" placeholder="Nombre de la categoría" value="${categoria.nombre}">` +
-        `<input id="swal-input2" class="swal2-input" placeholder="Descripción" value="${categoria.descripcion}">`,
+        `<input id="swal-input2" class="swal2-input" placeholder="Descripción (máx. 100 caracteres)" value="${categoria.descripcion}">`,
       focusConfirm: false,
       showCancelButton: true,
       confirmButtonText: 'Actualizar',
       preConfirm: () => {
-        const nombre = document.getElementById('swal-input1').value;
-        const descripcion = document.getElementById('swal-input2').value;
+        const nombre = document.getElementById('swal-input1').value.trim();
+        const descripcion = document.getElementById('swal-input2').value.trim();
+
+        // Validación de campos vacíos y longitud de la descripción
         if (!nombre) {
           Swal.showValidationMessage('El nombre es obligatorio');
           return;
         }
+        if (descripcion.length > 100) {
+          Swal.showValidationMessage('La descripción no puede exceder los 100 caracteres');
+          return;
+        }
+
+        // Verificar si el nombre de la categoría ya existe (excluyendo la categoría que se está editando)
+        if (categorias.some(c => c.nombre.toLowerCase() === nombre.toLowerCase() && c._id !== categoria._id)) {
+          Swal.showValidationMessage('Ya existe una categoría con este nombre');
+          return;
+        }
+
         return { nombre, descripcion };
       }
     });
