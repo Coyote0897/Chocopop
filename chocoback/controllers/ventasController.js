@@ -40,7 +40,6 @@ exports.registrarVenta = async (req, res, next) => {
     }
 };
 
-
 // Obtener todas las ventas
 exports.obtenerVentas = async (req, res, next) => {
     try {
@@ -65,5 +64,21 @@ exports.obtenerVenta = async (req, res, next) => {
     } catch (error) {
         console.error('Error al obtener la venta:', error);
         res.status(500).json({ mensaje: 'Error al obtener la venta', error: error.message });
+    }
+};
+
+// Obtener producto de la base de datos por el código de barras
+exports.obtenerProductoDeBD = async (req, res, next) => {
+    const { codigo_de_barras } = req.params;
+
+    try {
+        const producto = await Producto.findOne({ codigo_de_barras });
+        if (!producto) {
+            return res.status(404).json({ mensaje: `Producto con código de barras ${codigo_de_barras} no encontrado` });
+        }
+        res.status(200).json(producto);
+    } catch (error) {
+        console.error('Error al obtener el producto:', error);
+        res.status(500).json({ mensaje: 'Error al obtener el producto', error: error.message });
     }
 };

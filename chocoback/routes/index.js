@@ -5,7 +5,7 @@ const productoController = require('../controllers/productoController')
 const pedidosController = require('../controllers/pedidosController')
 const categoriaController = require('../controllers/categoriaController');
 const ventasController = require('../controllers/ventasController');
-
+const reportController = require('../controllers/reportController');
 
 
 //middleware para proteger las rutas
@@ -65,6 +65,18 @@ module.exports = function(){
     router.post('/ventas', ventasController.registrarVenta);
     router.get('/ventas', ventasController.obtenerVentas);    
     router.get('/ventas/:idVenta',ventasController.obtenerVenta); 
+
+    router.get('/ventas/codigo/:codigo_de_barras', ventasController.obtenerProductoDeBD);
+
+
+
+    //reportes
+    router.get('/reportes/productos-por-categoria', reportController.getProductosPorCategoria);
+    // Ruta para obtener ventas por día del mes
+    router.get('/reportes/ventas-por-dia', reportController.obtenerVentasPorDiaDelMes );
+
+
+
 
 
     return router
