@@ -26,6 +26,16 @@ export const obtenerVentaPorId = async (idVenta) => {
     console.error("Error al obtener los detalles de la venta:", error.response || error.message);
     throw error;
   }
+
 };
+//obtener producto de la base de datos
 
-
+export const obtenerProductoPorCodigoDeBarras = async (codigoDeBarras) => {
+  try {
+    const response = await clienteAxios.get(`/ventas/codigo/${codigoDeBarras}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener el producto por código de barras:", error.response || error.message);
+    throw error;
+  }
+};

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
-import { obtenerVentas, crearVenta, obtenerVentaPorId } from './ventasService';
-import { obtenerProductoPorCodigo } from '../productos/productosService';
+import { obtenerVentas, crearVenta, obtenerVentaPorId,obtenerProductoPorCodigoDeBarras } from './ventasService';
 import VentaRow from './VentaRow';
 
 const Ventas = () => {
@@ -99,7 +98,7 @@ const Ventas = () => {
 
             if (!codigoBarras) return;
 
-            const producto = await obtenerProductoPorCodigo(codigoBarras);
+            const producto = await obtenerProductoPorCodigoDeBarras(codigoBarras);
             if (!producto) {
                 Swal.fire('Producto no encontrado', 'Verifique el código de barras', 'error');
                 return;

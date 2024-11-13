@@ -9,8 +9,10 @@ import Productos from "./componentes/productos/productos";
 import Categorias from "./componentes/categorias/categorias";
 //ventas
 import Ventas from './componentes/Ventas/ventas';
-
+//clientes
 import Clientes from './componentes/clientes/clientes'; 
+//reportes
+import Reportes from './componentes/reportes/Reportes';
 
 
 
@@ -32,6 +34,7 @@ function App() {
                 <Route path="/categorias" element={<Categorias />} />
                 <Route path="/ventas" element={<Ventas/>} />
                 <Route path="/clientes" element={<Clientes />} />
+                <Route path="/reportes" element={<Reportes />} />
               </Routes>
             </div>
           </div>
