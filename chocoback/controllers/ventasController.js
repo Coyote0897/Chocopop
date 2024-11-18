@@ -26,10 +26,15 @@ exports.registrarVenta = async (req, res, next) => {
             });
         }
 
+        // Ajustar la fecha a UTC-4
+        const fechaVenta = new Date();
+        fechaVenta.setHours(fechaVenta.getHours() - 4); 
+
         const nuevaVenta = new Venta({
             productos: productosVenta,
             total,
-            metodoPago
+            metodoPago,
+            fecha: fechaVenta 
         });
 
         await nuevaVenta.save();
@@ -39,6 +44,7 @@ exports.registrarVenta = async (req, res, next) => {
         res.status(500).json({ mensaje: 'Error al registrar la venta', error: error.message });
     }
 };
+
 
 // Obtener todas las ventas
 exports.obtenerVentas = async (req, res, next) => {

@@ -69,8 +69,43 @@ const enviarEmailRecuperacion = async (email, nombre, token) => {
     }
 };
 
+const enviarEmailRespuesta = async (email, asunto, mensaje) => {
+    try {
+        // Configuración del transporte
+        const transport = nodemailer.createTransport({
+            host: "sandbox.smtp.mailtrap.io",
+            port: 2525,
+            auth: {
+                user: "f6e8e76be118b8", // Reemplaza con tu usuario de Mailtrap
+                pass: "20c0e12f9c706c"  // Reemplaza con tu contraseña de Mailtrap
+            }
+        });
+
+        // Definir el contenido del correo
+        const mailOptions = {
+            from: '"Choco Pop" <no-reply@chocopop.com>',
+            to: email,
+            subject: `Respuesta a: ${asunto}`,
+            html: `
+                <h1>Hola,</h1>
+                <p>${mensaje}</p>
+                <p>Gracias por comunicarte con nosotros.</p>
+                <p>Atentamente,<br>El equipo de Choco Pop</p>
+            `
+        };
+
+        // Enviar el correo
+        await transport.sendMail(mailOptions);
+        console.log('Correo de respuesta enviado exitosamente');
+    } catch (error) {
+        console.error('Error al enviar el correo de respuesta', error);
+        throw new Error('No se pudo enviar el correo de respuesta');
+    }
+};
+
 
 module.exports = {
     enviarEmailVerificacion,
-    enviarEmailRecuperacion
+    enviarEmailRecuperacion,
+    enviarEmailRespuesta
 };

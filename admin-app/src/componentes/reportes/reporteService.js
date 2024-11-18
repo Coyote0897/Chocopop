@@ -21,3 +21,8 @@ export const obtenerVentasPorDia = async (mes, anio) => {
         throw error;
     }
 };
+
+export const obtenerVentasPorMetodoPago = async () => {
+    const response = await axios.get('/reportes/ventas-por-metodo-pago');
+    return response.data;
+};

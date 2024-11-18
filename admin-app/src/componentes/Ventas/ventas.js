@@ -140,9 +140,9 @@ const Ventas = () => {
                 Swal.fire('Error', 'Debe agregar al menos un producto a la venta', 'error');
                 return;
             }
-
+    
             const total = productosVenta.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
-
+    
             const { value: metodoPago } = await Swal.fire({
                 title: 'Método de Pago',
                 input: 'select',
@@ -155,28 +155,34 @@ const Ventas = () => {
                 showCancelButton: true,
                 confirmButtonText: 'Registrar Venta'
             });
-
+    
             if (!metodoPago) return;
-
+    
+            // Ajustar la fecha de la venta a UTC-4
+            const fechaVenta = new Date();
+            fechaVenta.setHours(fechaVenta.getHours() - 4); // Ajuste de zona horaria
+    
             const nuevaVenta = {
                 productos: productosVenta.map(({ codigo_de_barras, cantidad }) => ({ codigo_de_barras, cantidad })),
                 total,
-                metodoPago
+                metodoPago,
+                fecha: fechaVenta // Incluye la fecha ajustada
             };
-
+    
             await crearVenta(nuevaVenta);
-
+    
             Swal.fire('Venta registrada', 'La venta ha sido registrada correctamente', 'success');
-
+    
             const ventasActualizadas = await obtenerVentas();
             setVentas(ventasActualizadas);
             setProductosVenta([]);
-
+    
         } catch (error) {
             console.error('Error al registrar la venta:', error);
             Swal.fire('Error', 'No se pudo registrar la venta', 'error');
         }
     };
+    
 
     // Función para editar cantidad de producto en la venta
     const editarProducto = (index) => {

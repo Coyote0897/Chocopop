@@ -4,7 +4,6 @@ const { find } = require('../models/usuarios');
 
 
 //agregar un nuevo pedido
-
 exports.nuevoPedido = async(req,res,next) =>{
 
     const pedido = new pedidos(req.body);
@@ -20,7 +19,6 @@ exports.nuevoPedido = async(req,res,next) =>{
 
 }
 // mostrar pedidos 
-
 exports.mostrarPedidos = async (req,res,next)=>{
     try {
         const pedido = await pedidos.find({}).populate('cliente').populate({
@@ -50,7 +48,6 @@ exports.mostrarPedido = async(req,res,next) => {
 }
 
 //Actualizar Pedido
-
 exports.actualizarPedido = async (req,res,next) =>{
     try {
         let pedido = await pedidos.findByIdAndUpdate({_id : req.params.idPedido},req.body,{

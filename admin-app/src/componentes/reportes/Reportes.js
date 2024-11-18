@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ProductosPorCategoriaChart from './ProductosPorCategoriaChart';
 import VentasPorDiaChart from './VentasPorDiaChart';
+import VentasPorMetodoPagoChart from './VentasPorMetodoPagoChart';
 
 const Reportes = () => {
     const [fecha, setFecha] = useState({ mes: new Date().getMonth() + 1, anio: new Date().getFullYear() });
@@ -30,6 +31,8 @@ const Reportes = () => {
                         </div>
                     </div>
                 );
+            case 'ventas-metodo-pago':
+                return <VentasPorMetodoPagoChart />;
             default:
                 return null;
         }
@@ -44,15 +47,19 @@ const Reportes = () => {
 
     return (
         <div className="min-h-screen bg-gray-100">
-            {/* Barra de navegación con botones */}
-            <nav className="bg-white shadow-md py-2 px-6 fixed w-full top-0 z-10">
+            <div className="text-center py-4 bg-blue-600 text-white shadow-md">
+                <h1 className="text-3xl font-bold">Reportes</h1>
+            </div>
+
+            <nav className="bg-white shadow-md py-2 px-6 mt-4">
                 <div className="container mx-auto flex justify-between items-center">
-                    {/* Navigation Buttons */}
+
+
                     <div className="flex space-x-3">
                         <button 
                             onClick={() => setActiveChart('categorias')}
                             className={`px-3 py-1 rounded-lg transition-colors duration-200 ease-in-out ${
-                                activeChart === 'categorias' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:text-blue-500'
+                                activeChart === 'categorias' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:text-blue-600'
                             }`}
                         >
                             Productos por Categoría
@@ -60,17 +67,25 @@ const Reportes = () => {
                         <button 
                             onClick={() => setActiveChart('ventas-dia')}
                             className={`px-3 py-1 rounded-lg transition-colors duration-200 ease-in-out ${
-                                activeChart === 'ventas-dia' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:text-blue-500'
+                                activeChart === 'ventas-dia' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:text-blue-600'
                             }`}
                         >
                             Ventas por Día
+                        </button>
+                        <button 
+                            onClick={() => setActiveChart('ventas-metodo-pago')}
+                            className={`px-3 py-1 rounded-lg transition-colors duration-200 ease-in-out ${
+                                activeChart === 'ventas-metodo-pago' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:text-blue-600'
+                            }`}
+                        >
+                            Ventas por Método de Pago
                         </button>
                     </div>
                 </div>
             </nav>
             
-            <div className="flex flex-col items-center pt-20 px-6">
-                <div className="w-full max-w-screen-xl bg-white shadow-lg rounded-lg p-6">
+            <div className="flex flex-col items-center pt-8 px-6">
+                <div className="w-full max-w-screen-xl bg-white shadow-lg rounded-lg p-6 mt-4">
                     {/* Fecha actual */}
                     <div className="text-center mb-4">
                         <p className="text-xl font-semibold text-gray-800">{fechaActual}</p>

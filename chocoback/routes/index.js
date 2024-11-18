@@ -6,7 +6,8 @@ const pedidosController = require('../controllers/pedidosController')
 const categoriaController = require('../controllers/categoriaController');
 const ventasController = require('../controllers/ventasController');
 const reportController = require('../controllers/reportController');
-
+const administradorController = require('../controllers/administradorController');
+const contactoController = require('../controllers/contactoController'); 
 
 //middleware para proteger las rutas
 //const auth = require('../middleware/auth')
@@ -23,8 +24,6 @@ module.exports = function(){
     router.post('/recuperar-password/:token', usuarioController.actualizarPassword);
 
     router.get('/usuarios', usuarioController.verUsuarios);
-
-
 
 
     //productos
@@ -68,17 +67,31 @@ module.exports = function(){
 
     router.get('/ventas/codigo/:codigo_de_barras', ventasController.obtenerProductoDeBD);
 
-
-
     //reportes
     router.get('/reportes/productos-por-categoria', reportController.getProductosPorCategoria);
     // Ruta para obtener ventas por día del mes
     router.get('/reportes/ventas-por-dia', reportController.obtenerVentasPorDiaDelMes );
+    //metodos de pago
+    router.get('/reportes/ventas-por-metodo-pago', reportController.obtenerVentasPorMetodoPago);
+
+    //administrador 
+    router.post('/admin/crear-cuenta', administradorController.registrarUsuario); 
+    router.post('/admin/iniciar-sesion', administradorController.autenticarUsuario);
+    router.get('/admin/listar-usuarios', administradorController.listarUsuarios);
+    router.put('/admin/editar-usuario/:id', administradorController.editarUsuario);
+    router.delete('/admin/eliminar-usuario/:id', administradorController.eliminarUsuario);
 
 
+    //contacto
+    router.post('/contactos', contactoController.crearContacto);
+    router.get('/contactos', contactoController.obtenerContactos); 
+    router.get('/contactos/:id', contactoController.obtenerContactoPorId);
+    router.delete('/contactos/:id', contactoController.eliminarContacto); 
+    router.post('/contactos/:id/responder', contactoController.responderContacto);
 
+ 
 
-
+    
     return router
 }
 

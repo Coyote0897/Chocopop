@@ -14,7 +14,12 @@ const verificarToken = (token) => {
     }
 };
 
+const admingenerarToken = (payload, expiresIn = '1h') => {
+    return jwt.sign({ ...payload }, SECRET_KEY, { expiresIn });
+  };
+
 module.exports = {
     generarToken,
-    verificarToken
+    verificarToken,
+    admingenerarToken,
 };
