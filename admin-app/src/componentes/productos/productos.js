@@ -166,8 +166,8 @@ const productosPaginados = productosFiltrados.slice(indexOfFirstProducto, indexO
                             const precio = document.getElementById('precio').value;
                             const categoria = document.getElementById('categoria').value;
 
-                            if (precio < 0) {
-                                Swal.showValidationMessage('El precio no puede ser negativo');
+                            if (precio < 1) {
+                                Swal.showValidationMessage('El precio no puede ser negativo o cero');
                                 return;
                             }
 
@@ -284,50 +284,53 @@ const productosPaginados = productosFiltrados.slice(indexOfFirstProducto, indexO
     // Almacena el ID de la categoría en `productoAEditar.categoria`
     setProductoAEditar({ ...producto, categoria: producto.categoria });
     setModalEditarOpen(true);
-};
-
-
-
-const handleChangeEditar = (e) => {
-  const { name, value, files } = e.target;
-
-  setProductoAEditar((prev) => ({
-    ...prev,
-    [name]: name === "categoria" ? categorias.find(c => c._id === value)?._id : (files ? files[0] : value),
-  }));
-};
-
-
-
-const handleEditarProducto = async () => {
-  const formData = new FormData();
-  formData.append("nombre", productoAEditar.nombre);
-  formData.append("categoria", productoAEditar.categoria);
-  formData.append("precio", productoAEditar.precio);
-  formData.append("descripcion", productoAEditar.descripcion);
-  formData.append("ingredientes", productoAEditar.ingredientes);
-  formData.append("pais", productoAEditar.pais);
-
-  if (productoAEditar.imagen instanceof File) {
-    formData.append("imagen", productoAEditar.imagen);
-  }
-
-  // Verifica el contenido de FormData antes de la solicitud
-  for (let [key, value] of formData.entries()) {
-    console.log(`${key}:`, value);
-  }
-
-  try {
-    await actualizarProducto(productoAEditar._id, formData);
-    Swal.fire("Producto actualizado", "", "success");
-    setModalEditarOpen(false);
-    const productosActualizados = await obtenerProductos();
-    setProductos(productosActualizados);
-  } catch (error) {
-    console.error("Error al actualizar el producto:", error);
-    Swal.fire("Error", "No se pudo actualizar el producto", "error");
-  }
-};
+  };
+  
+  const handleChangeEditar = (e) => {
+    const { name, value, files } = e.target;
+  
+    setProductoAEditar((prev) => ({
+      ...prev,
+      [name]: name === "categoria" ? categorias.find(c => c._id === value)?._id : (files ? files[0] : value),
+    }));
+  };
+  
+  const handleEditarProducto = async () => {
+    // Validaciones
+    if (!productoAEditar.precio || productoAEditar.precio <= 0) {
+      Swal.fire("Error", "El precio debe ser mayor a cero.", "error");
+      return;
+    }
+  
+    const formData = new FormData();
+    formData.append("nombre", productoAEditar.nombre);
+    formData.append("categoria", productoAEditar.categoria);
+    formData.append("precio", productoAEditar.precio);
+    formData.append("descripcion", productoAEditar.descripcion);
+    formData.append("ingredientes", productoAEditar.ingredientes);
+    formData.append("pais", productoAEditar.pais);
+  
+    if (productoAEditar.imagen instanceof File) {
+      formData.append("imagen", productoAEditar.imagen);
+    }
+  
+    // Verifica el contenido de FormData antes de la solicitud
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
+  
+    try {
+      await actualizarProducto(productoAEditar._id, formData);
+      Swal.fire("Producto actualizado", "", "success");
+      setModalEditarOpen(false);
+      const productosActualizados = await obtenerProductos();
+      setProductos(productosActualizados);
+    } catch (error) {
+      console.error("Error al actualizar el producto:", error);
+      Swal.fire("Error", "No se pudo actualizar el producto", "error");
+    }
+  };
+  
 
 //busqueda de productos
 const handleBusquedaChange = (e) => {
