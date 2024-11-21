@@ -185,3 +185,6 @@ exports.verUsuarios = async (req, res) => {
         res.status(500).json({ mensaje: 'Hubo un error al obtener la información de los usuarios' });
     }
 };
+
+
+

@@ -1,75 +1,60 @@
-const pedidos = require('../models/pedidos');
-const Usuarios = require('../models/pedidos');
-const { find } = require('../models/usuarios');
+const Pedido = require('../models/pedidos');
+const { 
+    enviarEmailPedidoEnCamino, 
+    enviarEmailPedidoEntregado 
+} = require('../helpers/emails'); 
 
+// Obtener todos los pedidos
+const obtenerPedidos = async (req, res) => {
+    try {
+        const pedidos = await Pedido.find()
+            .populate('usuario', 'nombre email') // Incluye información básica del usuario
+            .populate('productos.productoId', 'nombre precio'); // Incluye información de los productos
+        res.status(200).json(pedidos);
+    } catch (error) {
+        res.status(500).json({ mensaje: 'Error al obtener los pedidos', error });
+    }
+};
 
-//agregar un nuevo pedido
-exports.nuevoPedido = async(req,res,next) =>{
-
-    const pedido = new pedidos(req.body);
+// Actualizar el estado de un pedido
+const actualizarEstadoPedido = async (req, res) => {
+    const { id } = req.params; // ID del pedido
+    const { estado } = req.body; // Nuevo estado
 
     try {
-        await pedido.save();
-        res.json({mensaje: 'se agrego un nuevo pedido'})
-        
-    } catch (error) {
-        console.log(error)
-        next(error)
-    }
+        const pedido = await Pedido.findByIdAndUpdate(
+            id,
+            { estado },
+            { new: true } 
+        ).populate('usuario');
 
-}
-// mostrar pedidos 
-exports.mostrarPedidos = async (req,res,next)=>{
-    try {
-        const pedido = await pedidos.find({}).populate('cliente').populate({
-            path: 'pedido.producto',
-            model: 'Productos'
-        });
-    res.json(pedido);
-    } catch (error) {
-        console.log(error);
-        next(error);
-    }
-}
-
-//buscar un pedido 
-exports.mostrarPedido = async(req,res,next) => {
-        const pedido = await pedidos.findById(req.params.idPedido).populate('cliente').populate({
-            path: 'pedido.producto',
-            model: 'Productos'
-        });
-        if(!pedido){
-            res.json({mensaje: 'el pedido no existe'})
-            return next();
+        if (!pedido) {
+            return res.status(404).json({ mensaje: 'Pedido no encontrado' });
         }
-        res.json(pedido)
 
-    
-}
+        const cliente = pedido.usuario;
 
-//Actualizar Pedido
-exports.actualizarPedido = async (req,res,next) =>{
-    try {
-        let pedido = await pedidos.findByIdAndUpdate({_id : req.params.idPedido},req.body,{
-            new: true
-        }).populate('cliente').populate({
-            path: 'pedido.producto',
-            model: 'Productos'
-        });
-        res.json({mensaje:'actualizado'})
+        // Enviar correos según el nuevo estado
+        if (estado === 'Enviado' && cliente && cliente.email) {
+            await enviarEmailPedidoEnCamino(
+                cliente.email,
+                cliente.nombre,
+                pedido.productos,
+                pedido.total
+            );
+        } else if (estado === 'Entregado' && cliente && cliente.email) {
+            await enviarEmailPedidoEntregado(cliente.email, cliente.nombre);
+        }
+
+        res.status(200).json({ mensaje: 'Estado del pedido actualizado', pedido });
     } catch (error) {
-        console.log(error);
-        next();
+        console.error('Error al actualizar el estado del pedido:', error);
+        res.status(500).json({ mensaje: 'Error al actualizar el estado del pedido', error });
     }
-}
+};
 
-//eliminar Pedido
-exports.eliminarPedido = async(req,res,next)=>{
-    try {
-        await pedidos.findByIdAndDelete({_id : req.params.idPedido});
-        res.json({mensaje:'pedido eliminado'})
-    } catch (error) {
-        console.log(error);
-        next();
-    }
-}
+
+module.exports = {
+    obtenerPedidos,
+    actualizarEstadoPedido
+};

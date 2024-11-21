@@ -8,9 +8,11 @@ const ventasController = require('../controllers/ventasController');
 const reportController = require('../controllers/reportController');
 const administradorController = require('../controllers/administradorController');
 const contactoController = require('../controllers/contactoController'); 
+const carritoController = require('../controllers/carritoController');
+
 
 //middleware para proteger las rutas
-//const auth = require('../middleware/auth')
+const authMiddleware = require('../middleware/auth');
 
 
 module.exports = function(){
@@ -22,10 +24,9 @@ module.exports = function(){
     //recuperar password
     router.post('/recuperar-password', usuarioController.solicitarRecuperacionPassword);
     router.post('/recuperar-password/:token', usuarioController.actualizarPassword);
-
     router.get('/usuarios', usuarioController.verUsuarios);
 
-
+   
     //productos
     router.post('/productos',productoController.subirArchivo,productoController.nuevoProducto);
     router.get('/productos',productoController.obtenerProductos);
@@ -54,17 +55,16 @@ module.exports = function(){
    
 
     //pedidos
-    router.post('/pedidos',pedidosController.nuevoPedido);
-    router.get('/pedidos',pedidosController.mostrarPedidos);
-    router.get('/pedidos/:idPedido',pedidosController.mostrarPedido);
-    router.put('/pedidos/:idPedido',pedidosController.actualizarPedido);
-    router.delete('/pedidos/:idPedido',pedidosController.eliminarPedido);
+    router.get('/pedidos', pedidosController.obtenerPedidos); 
+    router.put('/pedidos/:id', pedidosController.actualizarEstadoPedido);
+
+
+
 
     //ventas
     router.post('/ventas', ventasController.registrarVenta);
     router.get('/ventas', ventasController.obtenerVentas);    
     router.get('/ventas/:idVenta',ventasController.obtenerVenta); 
-
     router.get('/ventas/codigo/:codigo_de_barras', ventasController.obtenerProductoDeBD);
 
     //reportes
@@ -89,7 +89,14 @@ module.exports = function(){
     router.delete('/contactos/:id', contactoController.eliminarContacto); 
     router.post('/contactos/:id/responder', contactoController.responderContacto);
 
- 
+
+    //carrito
+    router.post('/carrito', authMiddleware, carritoController.agregarProducto);
+    router.get('/carrito', authMiddleware, carritoController.obtenerCarrito);
+    router.put('/carrito', authMiddleware, carritoController.actualizarCantidad);
+    router.delete('/carrito', authMiddleware, carritoController.eliminarProducto);
+    router.post('/carrito/confirmar-compra', authMiddleware, carritoController.confirmarCompra);
+    
 
     
     return router
