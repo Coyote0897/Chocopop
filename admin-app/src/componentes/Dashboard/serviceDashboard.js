@@ -1,5 +1,24 @@
 import clienteAxios from "../config/axios";
 
+
+export const iniciarSesion = async (usuario, password) => {
+  try {
+    const { data } = await clienteAxios.post("/admin/iniciar-sesion", {
+      usuario,
+      password,
+    });
+
+    // Guarda el token y el cargo en el localStorage
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("cargo", data.cargo);
+
+    return data;
+  } catch (error) {
+    console.error("Error al iniciar sesión:", error);
+    throw error;
+  }
+};
+
 // Obtener el cargo del usuario autenticado
 export const obtenerCargoUsuario = async () => {
   try {

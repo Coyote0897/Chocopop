@@ -11,7 +11,7 @@ import {
   CakeIcon,
   UserIcon,
   ArrowLeftOnRectangleIcon,
-  EnvelopeIcon, 
+  EnvelopeIcon,
 } from "@heroicons/react/24/outline";
 
 const Sidebar = () => {
@@ -26,7 +26,7 @@ const Sidebar = () => {
     { name: "Categorias", icon: <TagIcon className="w-5 h-5" />, path: "/categorias" },
     { name: "Pedidos", icon: <CalendarIcon className="w-5 h-5" />, path: "/pedidos" },
     { name: "Reportes", icon: <ChartBarIcon className="w-5 h-5" />, path: "/reportes" },
-    { name: "Contactos", icon: <EnvelopeIcon className="w-5 h-5" />, path: "/Contacto" }, // Nuevo ítem
+    { name: "Contactos", icon: <EnvelopeIcon className="w-5 h-5" />, path: "/Contacto" },
   ];
 
   const handleLogout = () => {
@@ -41,7 +41,7 @@ const Sidebar = () => {
       cancelButtonText: "Cancelar",
     }).then((result) => {
       if (result.isConfirmed) {
-        localStorage.removeItem("token"); // Eliminar el token del almacenamiento local
+        localStorage.removeItem("token");
         Swal.fire({
           title: "Sesión cerrada",
           text: "Has cerrado sesión exitosamente.",
@@ -49,41 +49,52 @@ const Sidebar = () => {
           timer: 1500,
           showConfirmButton: false,
         }).then(() => {
-          window.location.href = "/"; 
+          window.location.href = "/";
         });
       }
     });
   };
 
   return (
-    <div className="flex flex-col h-screen w-64 bg-gray-900 text-white">
-      <div className="flex items-center justify-center h-16 border-b border-gray-700">
-        <img src="/img/tablero.png" alt="Logo" className="h-10" />
+    <div className="flex flex-col h-screen w-64 bg-gray-900 text-white shadow-lg">
+      {/* Header */}
+      <div className="flex items-center justify-center h-16 border-b border-gray-700 bg-gradient-to-r from-purple-700 to-indigo-500 shadow-md">
+        <Link to="/dashboard">
+          <img src="/img/tablero.png" alt="Logo" className="h-10" />
+        </Link>
       </div>
 
+      {/* Navigation */}
       <nav className="flex-1 px-4 py-4">
         {menuItems.map((item) => (
           <NavLink
             key={item.name}
             to={item.path}
             className={({ isActive }) =>
-              `flex items-center px-4 py-2 my-2 rounded-md ${
-                isActive ? "bg-gray-800" : "hover:bg-gray-700"
+              `flex items-center px-4 py-2 my-2 rounded-md transition-all duration-200 ${
+                isActive
+                  ? "bg-gray-800 border-l-4 border-indigo-500 text-indigo-400"
+                  : "hover:bg-gray-700 hover:scale-105"
               }`
             }
             onClick={() => setActive(item.name)}
           >
-            {item.icon}
+            <div className="transform transition-transform duration-200 hover:scale-110">
+              {item.icon}
+            </div>
             <span className="ml-3">{item.name}</span>
           </NavLink>
         ))}
       </nav>
 
-      {/* Botón de Cerrar Sesión */}
-      <div className="px-4 py-4 border-t border-gray-700">
+      {/* Divider */}
+      <div className="border-t border-gray-700 my-4"></div>
+
+      {/* Logout Button */}
+      <div className="px-4 py-4">
         <button
           onClick={handleLogout}
-          className="flex items-center w-full px-4 py-2 rounded-md hover:bg-gray-700"
+          className="flex items-center w-full px-4 py-2 text-red-500 rounded-md hover:bg-red-700 hover:text-white transition-all duration-200"
         >
           <ArrowLeftOnRectangleIcon className="w-5 h-5" />
           <span className="ml-3">Cerrar Sesión</span>

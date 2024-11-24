@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { iniciarSesion } from "../administracion/loginServices"; // Servicio de inicio de sesión
-import Swal from "sweetalert2"; // Importar SweetAlert
+import { iniciarSesion } from "../administracion/loginServices"; 
+import Swal from "sweetalert2"; 
 
 const Login = () => {
   const [usuario, setUsuario] = useState("");
@@ -13,14 +13,12 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      // Llamada al servicio para iniciar sesión
+    try {  
       const data = await iniciarSesion(usuario, password);
-
-      // Guardar el token en el localStorage
       localStorage.setItem("token", data.token);
+      localStorage.setItem("cargo", data.cargo); 
 
-      // Mostrar alerta de éxito
+     
       Swal.fire({
         title: "Inicio de Sesión Exitoso",
         text: "¡Bienvenido al sistema!",
@@ -28,14 +26,13 @@ const Login = () => {
         timer: 1500,
         showConfirmButton: false,
       }).then(() => {
-        // Redirigir al dashboard
+        
         navigate("/dashboard");
 
-        // Refrescar la página
+        
         window.location.reload();
       });
     } catch (err) {
-      // Mostrar error con SweetAlert
       Swal.fire({
         title: "Error",
         text: err,

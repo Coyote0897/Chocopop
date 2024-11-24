@@ -10,12 +10,15 @@ import Swal from "sweetalert2";
 
 const Usuarios = () => {
   const [usuarios, setUsuarios] = useState([]);
+  const [cargo, setCargo] = useState(null); // Nuevo estado para guardar el cargo del usuario
 
   useEffect(() => {
     const cargarUsuarios = async () => {
       try {
         const data = await obtenerUsuarios();
         setUsuarios(data);
+        const userCargo = localStorage.getItem("cargo"); // Obtener cargo del almacenamiento local
+        setCargo(userCargo); // Guardarlo en el estado
       } catch (error) {
         console.error("Error al cargar usuarios:", error);
       }
@@ -25,6 +28,11 @@ const Usuarios = () => {
   }, []);
 
   const agregarUsuario = async () => {
+    if (cargo !== "Administrador") {
+      Swal.fire("Permiso denegado", "No tienes permisos para agregar usuarios.", "error");
+      return;
+    }
+
     const { value: formValues } = await Swal.fire({
       title: "Registrar Nuevo Usuario",
       html: `
@@ -65,6 +73,11 @@ const Usuarios = () => {
   };
 
   const eliminarUsuarioHandler = async (id) => {
+    if (cargo !== "Administrador") {
+      Swal.fire("Permiso denegado", "No tienes permisos para eliminar usuarios.", "error");
+      return;
+    }
+
     try {
       const confirm = await Swal.fire({
         title: "¿Estás seguro?",
@@ -133,6 +146,7 @@ const Usuarios = () => {
       <button
         className="mb-4 px-4 py-2 bg-green-500 text-white rounded-md"
         onClick={agregarUsuario}
+        disabled={cargo !== "Administrador"} // Deshabilitar si no es administrador
       >
         Agregar Usuario
       </button>
@@ -152,6 +166,7 @@ const Usuarios = () => {
               usuario={usuario}
               eliminarUsuario={eliminarUsuarioHandler}
               abrirModalEditar={abrirModalEditar}
+              cargoActual={cargo} // Pasar el cargo actual como prop
             />
           ))}
         </tbody>
