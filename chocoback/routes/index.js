@@ -14,6 +14,9 @@ const carritoController = require('../controllers/carritoController');
 //middleware para proteger las rutas
 const authMiddleware = require('../middleware/auth');
 
+const authRole = require('../middleware/authRole');
+
+
 
 module.exports = function(){
     //usuarios

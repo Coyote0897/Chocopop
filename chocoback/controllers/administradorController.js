@@ -48,6 +48,7 @@ exports.autenticarUsuario = async (req, res, next) => {
     if (!isMatch) {
       return res.status(401).json({ error: "Contraseña incorrecta." });
     }
+    console.log(`Usuario autenticado: ${usuario}, Cargo: ${user.cargo}`);
 
     const token = admingenerarToken({ id: user._id, cargo: user.cargo });
 
