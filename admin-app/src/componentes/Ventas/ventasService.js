@@ -39,3 +39,14 @@ export const obtenerProductoPorCodigoDeBarras = async (codigoDeBarras) => {
     throw error;
   }
 };
+
+// Eliminar una venta por ID
+export const eliminarVentaPorId = async (idVenta) => {
+  try {
+    const response = await clienteAxios.delete(`/ventas/${idVenta}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error al eliminar la venta:", error.response || error.message);
+    throw error;
+  }
+};

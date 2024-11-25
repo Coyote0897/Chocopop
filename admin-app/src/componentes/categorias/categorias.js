@@ -66,25 +66,43 @@ const Categorias = () => {
 
   const eliminarCategoria = async (id) => {
     try {
+      
+      const cargo = localStorage.getItem("cargo");
+      if (cargo !== "Administrador") {
+        Swal.fire({
+          icon: "error",
+          title: "Acceso Denegado",
+          text: "Solo los administradores pueden eliminar categorías.",
+        });
+        return; 
+      }
+  
+      
       const confirm = await Swal.fire({
-        title: '¿Estás seguro?',
-        text: 'Esta acción eliminará la categoría de forma permanente.',
-        icon: 'warning',
+        title: "¿Estás seguro?",
+        text: "Esta acción eliminará la categoría de forma permanente.",
+        icon: "warning",
         showCancelButton: true,
-        confirmButtonText: 'Sí, eliminar',
+        confirmButtonText: "Sí, eliminar",
         cancelButtonText: "Cancelar",
       });
-
+  
       if (confirm.isConfirmed) {
+        
         await axios.delete(`/categorias/${id}`);
         setCategorias(categorias.filter((categoria) => categoria._id !== id));
-        Swal.fire('Eliminada', 'La categoría ha sido eliminada', 'success');
+  
+        
+        Swal.fire("Eliminada", "La categoría ha sido eliminada", "success");
       }
     } catch (error) {
       console.error("Error al eliminar la categoría:", error);
-      Swal.fire('Error', 'Hubo un problema al eliminar la categoría', 'error');
+  
+      
+      Swal.fire("Error", "Hubo un problema al eliminar la categoría", "error");
     }
   };
+  
 
   const abrirModalEditar = async (categoria) => {
     const { value: formValues } = await Swal.fire({

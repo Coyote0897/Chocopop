@@ -16,6 +16,8 @@ import Contacto from "./componentes/contactos/Contacto";
 import PageNotFound from "./componentes/error/PageNotFound"; 
 import Pedidos from "./componentes/pedidos/Pedidos"; 
 
+//rutas protegidas
+import AdminProtectedRoute from "./componentes/rutas/AdminProtectedRoute"; // Importa el nuevo componente
 
 // Componente para rutas protegidas
 const ProtectedRoute = ({ isAuthenticated, children }) => {
@@ -43,7 +45,6 @@ function App() {
                     <div className="p-6">
                       <Routes>
                         <Route path="/Contacto" element={<Contacto />} />
-                        <Route path="/Usuarios" element={<Usuarios />} />
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/productos" element={<Productos />} />
                         <Route path="/categorias" element={<Categorias />} />
@@ -52,8 +53,17 @@ function App() {
                         <Route path="/reportes" element={<Reportes />} />
                         <Route path="/pedidos" element={<Pedidos />} />
 
+                        
+                        <Route
+                          path="/Usuarios"
+                          element={
+                            <AdminProtectedRoute>
+                              <Usuarios />
+                            </AdminProtectedRoute>
+                          }
+                        />
 
-                        {/* Página 404 dentro de las rutas protegidas */}
+                        {/* Página 404 */}
                         <Route path="*" element={<PageNotFound />} />
                       </Routes>
                     </div>
@@ -63,7 +73,7 @@ function App() {
             }
           />
 
-          {/* Página 404 para rutas no protegidas */}
+         
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </Fragment>

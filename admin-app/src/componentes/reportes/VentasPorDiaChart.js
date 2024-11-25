@@ -56,7 +56,7 @@ const VentasPorDiaChart = ({ mes, anio }) => {
 
     return (
         <div className="flex flex-col items-center justify-center h-full p-4">
-    <h2 className="text-2xl font-bold text-center mb-4">Ventas por Día del Mes</h2>
+    <h2 className="text-2xl font-bold text-center mb-4">Ventas por Mes</h2>
     <div className="w-full max-w-6xl h-[500px] p-6 bg-white shadow-md rounded-lg">
         {chartData ? (
             <Line 
