@@ -69,6 +69,9 @@ module.exports = function(){
     router.get('/ventas', ventasController.obtenerVentas);    
     router.get('/ventas/:idVenta',ventasController.obtenerVenta); 
     router.get('/ventas/codigo/:codigo_de_barras', ventasController.obtenerProductoDeBD);
+    router.delete('/ventas/:idVenta', ventasController.eliminarVenta);
+    
+
 
     //reportes
     router.get('/reportes/productos-por-categoria', reportController.getProductosPorCategoria);

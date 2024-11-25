@@ -88,3 +88,20 @@ exports.obtenerProductoDeBD = async (req, res, next) => {
         res.status(500).json({ mensaje: 'Error al obtener el producto', error: error.message });
     }
 };
+// Eliminar una venta por ID
+exports.eliminarVenta = async (req, res, next) => {
+    const { idVenta } = req.params;
+
+    try {
+        const ventaEliminada = await Venta.findByIdAndDelete(idVenta);
+        
+        if (!ventaEliminada) {
+            return res.status(404).json({ mensaje: 'Venta no encontrada' });
+        }
+
+        res.status(200).json({ mensaje: 'Venta eliminada correctamente', venta: ventaEliminada });
+    } catch (error) {
+        console.error('Error al eliminar la venta:', error);
+        res.status(500).json({ mensaje: 'Error al eliminar la venta', error: error.message });
+    }
+};
