@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
-import { obtenerVentas, crearVenta, obtenerVentaPorId,obtenerProductoPorCodigoDeBarras,eliminarVentaPorId } from './ventasService';
+import { obtenerVentas, crearVenta, obtenerVentaPorId,obtenerProductoPorCodigoDeBarras,eliminarVentaPorId,obtenerProductoPorNombre } from './ventasService';
 import VentaRow from './VentaRow';
 
 const Ventas = () => {
@@ -84,6 +84,74 @@ const Ventas = () => {
             Swal.fire("Error", "No se pudieron cargar los detalles de la venta", "error");
         }
     };
+
+    const agregarProductoPorNombre = async () => {
+        try {
+          const { value: nombre } = await Swal.fire({
+            title: 'Buscar Producto por Nombre',
+            input: 'text',
+            inputPlaceholder: 'Ingrese el nombre del producto',
+            showCancelButton: true,
+            confirmButtonText: 'Buscar',
+          });
+      
+          if (!nombre) return;
+      
+          const productos = await obtenerProductoPorNombre(nombre);
+      
+          if (!productos || productos.length === 0) {
+            Swal.fire('Sin resultados', 'No se encontraron productos con ese nombre', 'error');
+            return;
+          }
+      
+          const opciones = productos.reduce((acc, producto) => {
+            acc[producto._id] = `${producto.nombre} - ${producto.precio} Bs`;
+            return acc;
+          }, {});
+      
+          const { value: productoSeleccionadoId } = await Swal.fire({
+            title: 'Seleccione un Producto',
+            input: 'select',
+            inputOptions: opciones,
+            inputPlaceholder: 'Seleccione un producto',
+            showCancelButton: true,
+            confirmButtonText: 'Seleccionar',
+          });
+      
+          if (!productoSeleccionadoId) return;
+      
+          const productoSeleccionado = productos.find((producto) => producto._id === productoSeleccionadoId);
+      
+          const { value: cantidad } = await Swal.fire({
+            title: `Agregar ${productoSeleccionado.nombre}`,
+            html: `<p>Precio: ${productoSeleccionado.precio} Bs</p><input id="cantidad" type="number" class="swal2-input" placeholder="Cantidad">`,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Agregar a la Venta',
+            preConfirm: () => document.getElementById('cantidad').value,
+          });
+      
+          if (!cantidad) return;
+      
+          setProductosVenta((prev) => [
+            ...prev,
+            {
+              codigo_de_barras: productoSeleccionado.codigo_de_barras,
+              producto: productoSeleccionado._id,
+              nombre: productoSeleccionado.nombre,
+              precio: productoSeleccionado.precio,
+              cantidad: parseInt(cantidad, 10),
+            },
+          ]);
+      
+          Swal.fire('Producto agregado', `${cantidad} unidades de ${productoSeleccionado.nombre} agregado a la venta`, 'success');
+        } catch (error) {
+          console.error('Error al agregar producto por nombre:', error);
+          Swal.fire('Error', 'No se pudo agregar el producto a la venta', 'error');
+        }
+      };
+      
+      
 
     const agregarProductoAVenta = async () => {
         try {
@@ -302,6 +370,12 @@ const Ventas = () => {
             <button className="mb-4 px-4 py-2 bg-blue-500 text-white rounded-md" onClick={agregarProductoAVenta}>
                 Agregar Producto a Venta
             </button>
+            <button
+            className="mb-4 ml-2 px-4 py-2 bg-yellow-500 text-white rounded-md"
+            onClick={agregarProductoPorNombre}
+            >
+            Buscar Producto por Nombre
+            </button>
             <button className="mb-4 ml-2 px-4 py-2 bg-green-500 text-white rounded-md" onClick={registrarVenta}>
                 Registrar Venta
             </button>
@@ -321,7 +395,7 @@ const Ventas = () => {
                         <tr key={index} className="hover:bg-gray-100 transition duration-200">
                             <td className="p-4 border-b border-gray-300 text-gray-700">{item.nombre}</td>
                             <td className="p-4 border-b border-gray-300 text-gray-700 text-center">{item.cantidad} unidades</td>
-                            <td className="p-4 border-b border-gray-300 text-green-600 font-semibold text-right">${(item.precio * item.cantidad).toFixed(2)}</td>
+                            <td className="p-4 border-b border-gray-300 text-green-600 font-semibold text-right">{(item.precio * item.cantidad).toFixed(2)} Bs</td>
                             <td className="p-4 border-b border-gray-300 text-center">
                                 <button onClick={() => editarProducto(index)} className="px-2 py-1 bg-purple-500 text-white rounded-md mr-2">Editar</button>
                                 <button onClick={() => eliminarProducto(index)} className="px-2 py-1 bg-red-500 text-white rounded-md">Eliminar</button>

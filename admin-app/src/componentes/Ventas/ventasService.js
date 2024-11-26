@@ -50,3 +50,19 @@ export const eliminarVentaPorId = async (idVenta) => {
     throw error;
   }
 };
+
+
+// Buscar productos por nombre
+export const obtenerProductoPorNombre = async (nombre) => {
+  try {
+    const response = await clienteAxios.get(`/productos?nombre=${nombre}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener producto por nombre:", error.response || error.message);
+    throw error;
+  }
+};
+
+
+
+

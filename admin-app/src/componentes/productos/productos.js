@@ -213,7 +213,6 @@ const productosPaginados = productosFiltrados.slice(indexOfFirstProducto, indexO
   
   //agregar manualmente
   const handleAgregarManual = async () => {
-  
     const categoriasDisponibles = await obtenerCategorias(); 
     const categoriasFiltradas = categoriasDisponibles.filter(cat => cat.nombre && cat._id);
     const opcionesCategorias = categoriasFiltradas.map(cat => 
@@ -230,15 +229,58 @@ const productosPaginados = productosFiltrados.slice(indexOfFirstProducto, indexO
         <input id="ingredientes" class="swal2-input" placeholder="Ingredientes">
         <input id="pais" class="swal2-input" placeholder="País de Origen">
         <input id="codigoManual" class="swal2-input" placeholder="Código Manual" value="BAR${Date.now()}">
-      <div class="w-full p-3 mb-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center">
-        <label for="imagen" class="cursor-pointer px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Seleccionar archivo</label>
-        <input id="imagen" type="file" class="hidden">
-        <span id="file-name" class="ml-4 text-gray-500">Ningún archivo seleccionado</span>
-      </div>
+        <div class="w-full p-3 mb-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center">
+          <label for="imagen" class="cursor-pointer px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Seleccionar archivo</label>
+          <input id="imagen" type="file" class="hidden">
+          <span id="file-name" class="ml-4 text-gray-500">Ningún archivo seleccionado</span>
+        </div>
+        <button id="webcam-button" class="mt-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+          Capturar con Webcam
+        </button>
+        <div id="webcam-container" class="hidden mt-4">
+          <video id="video" autoplay class="border rounded w-full"></video>
+          <button id="capture-button" class="mt-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+            Capturar Foto
+          </button>
+          <canvas id="canvas" class="hidden"></canvas>
+          <div id="preview-container" class="mt-4 hidden">
+            <img id="preview-image" class="border rounded w-full" alt="Previsualización de la imagen capturada" />
+          </div>
+        </div>
       `,
       showCancelButton: true,
       confirmButtonText: "Agregar",
       cancelButtonText: "Cancelar",
+      didOpen: () => {
+        const webcamButton = document.getElementById("webcam-button");
+        const webcamContainer = document.getElementById("webcam-container");
+        const video = document.getElementById("video");
+        const captureButton = document.getElementById("capture-button");
+        const canvas = document.getElementById("canvas");
+        const context = canvas.getContext("2d");
+        const previewContainer = document.getElementById("preview-container");
+        const previewImage = document.getElementById("preview-image");
+  
+        webcamButton.addEventListener("click", async () => {
+          webcamContainer.classList.remove("hidden");
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+          } catch (error) {
+            console.error("Error al acceder a la cámara:", error);
+          }
+        });
+  
+        captureButton.addEventListener("click", () => {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL("image/jpeg");
+          previewImage.src = dataUrl;
+          previewImage.setAttribute("data-image", dataUrl); // Guardar la imagen como atributo
+          previewContainer.classList.remove("hidden"); // Mostrar la previsualización
+        });
+      },
       preConfirm: async () => {
         const nombre = document.getElementById("nombre").value;
         const categoria = document.getElementById("categoria").value;
@@ -248,13 +290,14 @@ const productosPaginados = productosFiltrados.slice(indexOfFirstProducto, indexO
         const pais = document.getElementById("pais").value;
         const codigoManual = document.getElementById("codigoManual").value;
         const imagen = document.getElementById("imagen").files[0];
+        const previewImage = document.getElementById("preview-image");
+        const imageBase64 = previewImage.getAttribute("data-image");
   
         if (!nombre || !categoria || !precio) {
           Swal.showValidationMessage("Por favor completa todos los campos requeridos");
           return;
         }
   
-       
         const formData = new FormData();
         formData.append("nombre", nombre);
         formData.append("categoria", categoria); 
@@ -263,7 +306,14 @@ const productosPaginados = productosFiltrados.slice(indexOfFirstProducto, indexO
         formData.append("ingredientes", ingredientes);
         formData.append("pais", pais);
         formData.append("codigo_de_barras", codigoManual);
-        if (imagen) formData.append("imagen", imagen);
+  
+        // Procesar la imagen seleccionada o capturada
+        if (imagen) {
+          formData.append("imagen", imagen); // Imagen subida desde la computadora
+        } else if (imageBase64) {
+          const blob = await (await fetch(imageBase64)).blob();
+          formData.append("imagen", blob, "captura.jpg"); // Imagen capturada con la webcam
+        }
   
         try {
           await agregarProducto(formData);
@@ -277,6 +327,7 @@ const productosPaginados = productosFiltrados.slice(indexOfFirstProducto, indexO
       }
     });
   };
+  
 
   
   //editar producto 
