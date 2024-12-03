@@ -1,20 +1,24 @@
+AGREGAR MANUALMENTE
 python -m pytest test_agregar_manualmente.py
+LOGIN
 python -m pytest login.py
+CATEGORIAS
 python -m pytest test_categorias.py
+ADMINISTRACION
 python -m pytest test_administracion.py
+AGREGAR PRODUCTOS
 python -m pytest test_productos.py
 
-
 INICIO DE SESIÓN
-pytest -s -v INICIOSESION\test_iniciar_sesion.py
+python -m pytest test_iniciar_sesion.py
 
 CONTACTOS Y RECLAMOS
-pytest -s -v CONTACTOSYRECLAMOS\test_VerDetalles_Reclamo.py
- pytest -s -v CONTACTOSYRECLAMOS\test_Responder_Reclamo.py
+python -m pytest test_VerDetalles_Reclamo.py
+python -m pytest test_Responder_Reclamo.py
 
 PEDIDOS
-pytest -s -v PEDIDOS\test_actualizar_estado_pedido.py
+python -m pytest test_actualizar_estado_pedido.py
 
 REPORTES
 
-pytest -s -v REPORTES\test_mostrar_grafico_reportes.py
+python -m pytest test_mostrar_grafico_reportes.py
