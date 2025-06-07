@@ -1,5 +1,5 @@
 const Usuarios = require('../models/usuarios');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 //helpers
 const { enviarEmailVerificacion } = require('../helpers/emails');

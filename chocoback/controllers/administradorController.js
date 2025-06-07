@@ -1,5 +1,5 @@
 const Admin = require('../models/administrador');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const { admingenerarToken } = require('../helpers/token'); // Importar la función para manejar JWT
 
 // Registrar un usuario (Administrador o Empleado)
